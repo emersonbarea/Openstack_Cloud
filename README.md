@@ -2,15 +2,15 @@
 
 First of all, install Ubuntu Server LTS 18.04 on all servers and WhiteBox switches.
 
-Connect all machines like ```Openstack_Cloud.pdf``` topology.
+Connect all machines like [Openstack_Cloud.pdf](https://github.com/emersonbarea/Openstack_Cloud/blob/master/Openstack_Cloud.pdf) topology.
 
-Attention: before any step, make sure you have ssh access to ```sw-internet```. The ```sw-internet``` must also be able to access the internet.
+**Attention:** before any step, make sure you have ssh access to ```sw-internet```. The ```sw-internet``` must also be able to access the internet.
 
 run ```git clone https://github.com/emersonbarea/Openstack-Cloud.git``` in ```sw-internet```.
 
 Check the ```parameters.conf``` file to verify the parameters that will be used to configure automatically the servers and switches.
 
-Attention: all steps below must be performed from ```sw-internet```.
+**Attention:** all steps below must be performed from ```sw-internet```.
 
 1.) execute ```sudo sw-internet_first_of_all.sh```
 - this procedure configures ```sw-internet``` to be a dhcp server, dns server and firewall server to other machines
