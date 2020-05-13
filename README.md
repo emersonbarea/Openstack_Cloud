@@ -6,7 +6,7 @@ Connect all machines like [Openstack_Cloud.pdf](https://github.com/emersonbarea/
 
 **Attention:** before any step, make sure you have ssh access to ```sw-internet```. The ```sw-internet``` must also be able to access the internet.
 
-run ```git clone https://github.com/emersonbarea/Openstack-Cloud.git``` in ```sw-internet```.
+run [git clone https://github.com/emersonbarea/Openstack-Cloud.git](https://github.com/emersonbarea/Openstack-Cloud.git) in ```sw-internet```.
 
 Check the ```parameters.conf``` file to verify the parameters that will be used to configure automatically the servers and switches.
 
