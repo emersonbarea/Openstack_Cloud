@@ -35,7 +35,7 @@ scp -i "$USER_HOME"/.ssh/id_rsa.pub ./parameters.conf ./all_openstack_servers.sh
 echo '
 Accessing sw-internet Switch...
 '
-scp -i "$USER_HOME"/.ssh/id_rsa.pub ./parameters.conf ./sw-internet.sh "$WHOAMI"@"$TEMP_IP_SW_INTERNET":"$USER_HOME"/
+scp -i "$USER_HOME"/.ssh/id_rsa.pub ./parameters.conf ./sw-internet_first_of_all.sh ./sw-internet.sh "$WHOAMI"@"$TEMP_IP_SW_INTERNET":"$USER_HOME"/
 
 echo '
 Accessing sw-mgmt Switch...
