@@ -12,49 +12,49 @@ Check the ```parameters.conf``` file to verify the parameters that will be used 
 
 **Attention:** all steps below must be performed from ```sw-internet```.
 
-**1.** execute ```sudo sw-internet_first_of_all.sh```
+1. execute ```sudo sw-internet_first_of_all.sh```
 	- this procedure configures ```sw-internet``` to be a dhcp server, dns server and firewall server to other machines
 	- now, you should be able to ```ping``` all servers and switches (by DNS name and IP)
 
-**2.** execute ```./scp.sh``` to copy the all corresponding files to each server and switch.
+2. execute ```./scp.sh``` to copy the all corresponding files to each server and switch.
 
-**3.** ssh into ```infra0``` server and configure it:
+3. ssh into ```infra0``` server and configure it:
 	- ```ssh infra0```
 	- ```sudo ./all_openstack_servers.sh```
 	- ```sudo reboot```
 
-**4.** ssh into ```compute00``` server and configure it:
+4. ssh into ```compute00``` server and configure it:
 	- ```ssh compute00```
 	- ```sudo ./all_openstack_servers.sh```
 	- ```sudo reboot```
 
-**5.** ssh into ```compute01``` server and configure it:
+5. ssh into ```compute01``` server and configure it:
 	- ```ssh compute01```
 	- ```sudo ./all_openstack_servers.sh```
 	- ```sudo reboot```
 
-**6.** ssh into ```compute02``` server and configure it:
+6. ssh into ```compute02``` server and configure it:
 	- ```ssh compute02```
 	- ```sudo ./all_openstack_servers.sh```
 	- ```sudo reboot```
 
-**7.** ssh into ```sw-mgmt``` switch and configure it:
+7. ssh into ```sw-mgmt``` switch and configure it:
 	- ```ssh sw-mgmt```
 	- ```sudo ./sw-mgmt.sh```
 	- ```sudo reboot```
 
-**8.** ssh into ```sw-tenant``` switch and configure it:
+8. ssh into ```sw-tenant``` switch and configure it:
 	- ```ssh sw-tenant```
 	- ```sudo ./sw-tenant.sh```
 	- ```sudo reboot```
 
-**9.** complete the ```sw-internet``` configuration:
+9. complete the ```sw-internet``` configuration:
 	- ```sudo ./sw-internet.sh```
 	- ```sudo reboot```
 
 Now, all network parameters should be read to install Openstack. Continue following the steps bellow:
 
-**10.** ssh into ```infra0``` server and configure it:
+10. ssh into ```infra0``` server and configure it:
 	- ```ssh infra0```
 	- ```sudo ./only_infra_server.sh```
       
