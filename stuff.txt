@@ -1,15 +1,64 @@
-configurar jumbo-frame
+lxc-ls | grep infra_utility_container-
 
-NOS SERVIDORES
+lxc-attach infra_utility_container-cdd47e91
 
-ip link set eth0 mtu 9000;
-ip link set wlan0 mtu 9000;
+source openrc
 
-- primeiro configurar só nas físicas e ver como fica o mtu no "ip link show | grep mtu"
-- ir configurando nas outras (bond, vlan, br...) se não der certo só nas físicas
-- colocar essa configuração no startup da máquina
-  - no /etc/network/interfaces???
 
-NO HP
+# KEY
 
-entrar na vlan e digitar "jumbo"
+openstack keypair create default > default.pem
+
+
+# IMAGES
+
+wget http://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img
+wget http://download.cirros-cloud.net/0.5.1/cirros-0.5.1-x86_64-disk.img
+wget https://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img
+
+openstack image create --file xenial-server-cloudimg-amd64-disk1.img --disk-format qcow2 --container-format bare --public xenial-server
+openstack image create --file cirros-0.5.1-x86_64-disk.img --disk-format qcow2 --container-format bare --public cirros
+openstack image create --file bionic-server-cloudimg-amd64.img --disk-format qcow2 --container-format bare --public bionic-server
+
+# FLAVORS
+
+openstack flavor create --ram 512 --disk 1 --vcpus 1 m1.tiny
+openstack flavor create --ram 2048 --disk 20 --vcpus 1 m1.small
+openstack flavor create --ram 4096 --disk 40 --vcpus 1 m1.medium
+openstack flavor create --ram 8192 --disk 80 --vcpus 1 m1.large
+openstack flavor create --ram 16384 --disk 160 --vcpus 1 m1.xlarge
+
+# ADMINISTRATIVE EXTERNAL NETWORK
+
+openstack network create --external external-admin-net --availability-zone-hint nova --provider-network-type flat --provider-physical-network provider --share
+
+openstack subnet create --network external-admin-net --subnet-range 192.168.201.0/24 --allocation-pool start=192.168.201.1,end=192.168.201.200 --dhcp --gateway 192.168.201.254 --ip-version 4 --dns-nameserver 192.168.200.254 external-admin-subnet
+
+# CA-SERVER
+openstack server create --flavor m1.small --image bionic-server --key-name default --network external-admin-net CA-Server
+
+#########  openstack server create --flavor m1.small --image bionic-server --key-name default --network external-admin-net --fixed-ip-address 192.168.201.221  CA-Servera
+
+
+openstack network create --external external-vm-net --availability-zone-hint nova --provider-network-type flat --provider-physical-network provider --share
+
+openstack subnet create --network external-vm-net --subnet-range 192.168.201.0/24 --allocation-pool start=192.168.201.1,end=192.168.201.200 --dhcp --gateway 192.168.201.254 --ip-version 4 --dns-nameserver 192.168.200.254 external-vm-subnet
+
+openstack network create --internal --availability-zone-hint nova internal-net
+openstack subnet create --network internal-net --subnet-range 192.168.0.0/24 --dhcp --gateway 192.168.0.1 --ip-version 4 --dns-nameserver 192.168.200.254 internal-subnet
+
+openstack router create --availability-zone-hint nova internet-router
+openstack router set --external-gateway external-net --enable-snat internet-router
+openstack router add subnet internet-router internal-subnet
+
+openstack server create --flavor m1.tiny --image cirros --key-name default --network internal-net cirros_1
+openstack server show cirros_1
+openstack server create --flavor m1.tiny --image cirros --key-name default --network internal-net cirros_2
+openstack server show cirros_2
+
+openstack server create --flavor m1.tiny --image cirros --key-name default cirros_1 --availability-zone nova:compute00
+
+
+------------------------
+
+openstack server create --flavor m1.tiny --image cirros --key-name default --network internal-net CA-Server
