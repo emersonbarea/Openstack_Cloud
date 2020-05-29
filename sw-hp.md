@@ -1,7 +1,6 @@
 To configure the HP switch, Ctrl+c and Ctrl+v the configuration bellow:
 
-```
-configure terminal
+```configure terminal
 hostname "sw-hp"
 module 1 type j9147a
 trunk 1-4 trk1 lacp
@@ -45,8 +44,7 @@ vlan 201
    tagged Trk1-Trk4
    ip address 192.168.201.253 255.255.255.0
    exit
-no autorun
-```
+no autorun```
 
 and create all users password (manager and operator) with the command bellow:
 
