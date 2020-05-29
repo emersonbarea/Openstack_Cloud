@@ -35,14 +35,29 @@ openstack network create --external external-admin-net --availability-zone-hint 
 openstack subnet create --network external-admin-net --subnet-range 192.168.201.0/24 --allocation-pool start=192.168.201.1,end=192.168.201.200 --dhcp --gateway 192.168.201.254 --ip-version 4 --dns-nameserver 192.168.200.254 external-admin-subnet
 
 # CA-SERVER
-openstack server create --flavor m1.small --image bionic-server --key-name default --network external-admin-net CA-Server
+openstack security group create --description "Security Group to CA-Server virtual host" CA-Server-Security-Group
+ openstack security group rule create --ingress --protocol icmp --remote-ip 0.0.0.0/0 CA-Server-Security-Group
 
-#########  openstack server create --flavor m1.small --image bionic-server --key-name default --network external-admin-net --fixed-ip-address 192.168.201.221  CA-Servera
 
 
-openstack network create --external external-vm-net --availability-zone-hint nova --provider-network-type flat --provider-physical-network provider --share
 
-openstack subnet create --network external-vm-net --subnet-range 192.168.201.0/24 --allocation-pool start=192.168.201.1,end=192.168.201.200 --dhcp --gateway 192.168.201.254 --ip-version 4 --dns-nameserver 192.168.200.254 external-vm-subnet
+#regra momentanea
+ openstack security group rule create --ingress --protocol tcp --remote-ip 0.0.0.0/0 CA-Server-Security-Group
+ openstack security group rule create --ingress --protocol udp --remote-ip 0.0.0.0/0 CA-Server-Security-Group
+
+
+
+
+openstack server create --flavor m1.small --image bionic-server --key-name default --nic net-id=$(openstack network show external-admin-net | grep " id" | awk '{print $4}'),v4-fixed-ip=192.168.201.252 --security-group CA-Server-Security-Group CA-Server
+
+# ANOTHER EXTERNAL HOST (EXAMPLE - dynamic IP attribution)
+####openstack server create --flavor m1.small --image bionic-server --key-name default --network external-admin-net ServerName
+
+
+# ANOTHER EXTERNAL NETWORK
+# Obs.: it is not possible to create another external network using the same "provider" flat network
+####openstack network create --external external-vm-net --availability-zone-hint nova --provider-network-type flat --provider-physical-network provider --share
+####openstack subnet create --network external-vm-net --subnet-range 192.168.201.0/24 --allocation-pool start=192.168.201.1,end=192.168.201.200 --dhcp --gateway 192.168.201.254 --ip-version 4 --dns-nameserver 192.168.200.254 external-vm-subnet
 
 openstack network create --internal --availability-zone-hint nova internal-net
 openstack subnet create --network internal-net --subnet-range 192.168.0.0/24 --dhcp --gateway 192.168.0.1 --ip-version 4 --dns-nameserver 192.168.200.254 internal-subnet
@@ -58,7 +73,3 @@ openstack server show cirros_2
 
 openstack server create --flavor m1.tiny --image cirros --key-name default cirros_1 --availability-zone nova:compute00
 
-
-------------------------
-
-openstack server create --flavor m1.tiny --image cirros --key-name default --network internal-net CA-Server
