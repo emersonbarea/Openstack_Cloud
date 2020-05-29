@@ -1,0 +1,4 @@
+infra0
+compute00
+compute01
+compute02

@@ -1,0 +1,15 @@
+configurar jumbo-frame
+
+NOS SERVIDORES
+
+ip link set eth0 mtu 9000;
+ip link set wlan0 mtu 9000;
+
+- primeiro configurar só nas físicas e ver como fica o mtu no "ip link show | grep mtu"
+- ir configurando nas outras (bond, vlan, br...) se não der certo só nas físicas
+- colocar essa configuração no startup da máquina
+  - no /etc/network/interfaces???
+
+NO HP
+
+entrar na vlan e digitar "jumbo"

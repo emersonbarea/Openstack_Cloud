@@ -1,15 +1,18 @@
 #!/bin/bash
 
+
+# Rwin 38:d5:47:0f:c8:14; fixed-address 192.168.200.228
+
+
 update_SO() {
-    sed -i -- 's/'$HOSTNAME'/'$HOSTNAME_SW_INTERNET'/g' /etc/hosts
-    echo "$HOSTNAME_SW_INTERNET" > /etc/hostname
-    hostname "$HOSTNAME_SW_INTERNET"
+    sed -i -- 's/'$HOSTNAME'/'$HOSTNAME_RT_INTERNET'/g' /etc/hosts
+    echo "$HOSTNAME_RT_INTERNET" > /etc/hostname
+    hostname "$HOSTNAME_RT_INTERNET"
     apt update
     apt upgrade -y
     apt -f install -y
     apt autoremove -y
-    apt install vim htop ethtool dpdk sysfsutils openvswitch-switch-dpdk python-pip ifupdown whois vlan isc-dhcp-server bind9 host -y
-    pip install ryu tinyrpc==0.8
+    apt install vim htop ethtool dpdk sysfsutils openvswitch-switch-dpdk python-pip ifupdown whois isc-dhcp-server bind9 host openvpn -y
     timedatectl set-timezone America/Sao_Paulo
 }
 
@@ -28,19 +31,14 @@ iface eth4 inet static
     gateway '$OUTSIDE_GW'
 
 allow-hotplug '$OVS_BRIDGE_INTERNET'
-iface '$OVS_BRIDGE_INTERNET' inet manual
+iface '$OVS_BRIDGE_INTERNET' inet static
+    address '$IP_INTERNET_RT_INTERNET'
+    netmask '$MASK_INTERNET'
 
-allow-hotplug '$VLAN_IF_INTERNET'
-iface '$VLAN_IF_INTERNET' inet manual
-
-auto '$VLAN_IF_INTERNET'.'$VLAN_TAG_INTERNET'
-iface '$VLAN_IF_INTERNET'.'$VLAN_TAG_INTERNET' inet static
-vlan-raw-device '$VLAN_IF_INTERNET'
-    address '$IP_INTERNET_SW_INTERNET'
-    netmask '$MASK_MGMT > /etc/network/interfaces
-
-    echo $'8021q' > /etc/modules
-
+allow-hotplug '$OVS_BRIDGE_INTERNET_VM'
+iface '$OVS_BRIDGE_INTERNET_VM' inet static
+    address '$IP_INTERNET_VM_RT_INTERNET'
+    netmask '$MASK_INTERNET_VM > /etc/network/interfaces
 }
 
 configure_dpdk() {
@@ -76,43 +74,20 @@ configure_ovs() {
     systemctl restart openvswitch-switch
 
     ovs-vsctl del-br "$OVS_BRIDGE_INTERNET" 2> /dev/null
-    ovs-vsctl add-br "$OVS_BRIDGE_INTERNET" -- set bridge "$OVS_BRIDGE_INTERNET" datapath_type=netdev protocols=OpenFlow13 fail-mode=secure
+    ovs-vsctl add-br "$OVS_BRIDGE_INTERNET" -- set bridge "$OVS_BRIDGE_INTERNET" datapath_type=netdev
 
-    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET" dpdk-p0 tag="$VLAN_TAG_INTERNET" -- set Interface dpdk-p0 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:00:14.0 ofport=1
-    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET" dpdk-p1 tag="$VLAN_TAG_INTERNET" -- set Interface dpdk-p1 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:00:14.1 ofport=2
-    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET" dpdk-p2 tag="$VLAN_TAG_INTERNET" -- set Interface dpdk-p2 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:00:14.2 ofport=3
-    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET" dpdk-p3 tag="$VLAN_TAG_INTERNET" -- set Interface dpdk-p3 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:00:14.3 ofport=4
-    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET" dpdk-p4 tag="$VLAN_TAG_INTERNET" -- set Interface dpdk-p4 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:05:00.0 ofport=5
-    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET" dpdk-p5 tag="$VLAN_TAG_INTERNET" -- set Interface dpdk-p5 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:05:00.1 ofport=6
-    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET" "$VLAN_IF_INTERNET" tag="$VLAN_TAG_INTERNET" -- set interface "$VLAN_IF_INTERNET" type=internal -- set interface "$VLAN_IF_INTERNET" mtu_request=9600
+    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET" dpdk-p0 -- set Interface dpdk-p0 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:00:14.0 ofport=1
+    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET" dpdk-p1 -- set Interface dpdk-p1 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:00:14.1 ofport=2
+    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET" dpdk-p2 -- set Interface dpdk-p2 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:00:14.2 ofport=3
 
-    ovs-vsctl set-controller "$OVS_BRIDGE_INTERNET" tcp:127.0.0.1:6633
+    ovs-vsctl del-br "$OVS_BRIDGE_INTERNET_VM" 2> /dev/null
+    ovs-vsctl add-br "$OVS_BRIDGE_INTERNET_VM" -- set bridge "$OVS_BRIDGE_INTERNET_VM" datapath_type=netdev
+
+    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET_VM" dpdk-p3 -- set Interface dpdk-p3 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:00:14.3 ofport=4
+    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET_VM" dpdk-p4 -- set Interface dpdk-p4 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:05:00.0 ofport=5
+    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET_VM" dpdk-p5 -- set Interface dpdk-p5 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:05:00.1 ofport=6
 }
 
-configure_ryu() {
-    echo $'#!/bin/bash
-    
-ryu-manager /usr/local/lib/python2.7/dist-packages/ryu/app/simple_switch_13.py' > $(eval echo ~$USER)/ryu_controller.sh
-
-    chmod +x $(eval echo ~$USER)/ryu_controller.sh
-
-    echo $'[Unit]
-Description=RYU Controller
-
-[Service]
-User='$(whoami)$'
-TimeoutStartSec=0
-WorkingDirectory='$(eval echo ~$USER)$'
-ExecStart='$(eval echo ~$USER)$'/ryu_controller.sh
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target' > /etc/systemd/system/ryu.service
-
-    systemctl enable /etc/systemd/system/ryu.service
-    systemctl start ryu.service
-}
 
 configure_firewall() {
 echo $'#!/bin/bash
@@ -120,7 +95,8 @@ echo $'#!/bin/bash
 # Definition of variables
 ipt="/sbin/iptables"
 INTERNET_IF="eth4"
-INTERNAL_IF="'$VLAN_IF_INTERNET'.'$VLAN_TAG_INTERNET'"
+INTERNAL_IF="'$OVS_BRIDGE_INTERNET'"
+INTERNAL_IF_VM="'$OVS_BRIDGE_INTERNET_VM'"
 
 case $1 in
 start)
@@ -150,10 +126,12 @@ $ipt -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 # DNS requests
 $ipt -A INPUT -i $INTERNAL_IF -p udp --dport 53 -j ACCEPT
+$ipt -A INPUT -i $INTERNAL_IF_VM -p udp --dport 53 -j ACCEPT
 
 # Ping rule
 $ipt -A INPUT -p icmp --icmp-type echo-request -i $INTERNET_IF -m limit --limit 1/s -j ACCEPT
 $ipt -A INPUT -p icmp --icmp-type echo-request -i $INTERNAL_IF -j ACCEPT
+$ipt -A INPUT -p icmp --icmp-type echo-request -i $INTERNAL_IF_VM -j ACCEPT
 
 # SSH rule
 $ipt -A INPUT -p tcp --dport 22 -j ACCEPT
@@ -168,9 +146,11 @@ $ipt -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 # Internet access
 $ipt -A FORWARD -i $INTERNAL_IF -j ACCEPT
+$ipt -A FORWARD -i $INTERNAL_IF_VM -j ACCEPT
 
 # Ping rule 
 $ipt -A FORWARD -p icmp --icmp-type echo-request -i $INTERNAL_IF -j ACCEPT
+$ipt -A FORWARD -p icmp --icmp-type echo-request -i $INTERNAL_IF_VM -j ACCEPT
 
 
 #*********************** ROUTING ********************************#
@@ -239,36 +219,39 @@ WantedBy=default.target' > /etc/systemd/system/firewall.service
     systemctl start firewall.service
 }
 
-#configure_dhcp() {
-#    echo $'default-lease-time 600;
-#max-lease-time 7200;
-#
-#ddns-update-style none;
-#
-#authoritative;
-#
-#subnet '$NETWORK_INTERNET' netmask '$MASK_INTERNET' {
-#  range '$DHCP_RANGE_BEGIN' '$DHCP_RANGE_END';
-#  option domain-name-servers '$DNS_INTERNET';
-#  option subnet-mask '$MASK_INTERNET';
-#  option routers '$GW_INTERNET';
-#  option broadcast-address '$BROADCAST_INTERNET';
-#  default-lease-time 600;
-#  max-lease-time 7200;
-#}
-#
-#host '$HOSTNAME_SW_MGMT'    {hardware ethernet '$MAC_SW_MGMT'; fixed-address '$IP_INTERNET_SW_MGMT';}
-#host '$HOSTNAME_SW_TENANT'  {hardware ethernet '$MAC_SW_TENANT'; fixed-address '$IP_INTERNET_SW_TENANT';}
-#
-#host '$HOSTNAME_INFRA0'     {hardware ethernet '$MAC_INFRA0'; fixed-address '$IP_INTERNET_INFRA0';}
-#host '$HOSTNAME_COMPUTE00'  {hardware ethernet '$MAC_COMPUTE00'; fixed-address '$IP_INTERNET_COMPUTE00';}
-#host '$HOSTNAME_COMPUTE01'  {hardware ethernet '$MAC_COMPUTE01'; fixed-address '$IP_INTERNET_COMPUTE01';}
-#host '$HOSTNAME_COMPUTE02'  {hardware ethernet '$MAC_COMPUTE02'; fixed-address '$IP_INTERNET_COMPUTE02';}
-#
-#host '$HOSTNAME_RARITAN'    {hardware ethernet '$MAC_RARITAN'; fixed-address '$IP_INTERNET_RARITAN';}' > /etc/dhcp/dhcpd.conf
-#
-#    systemctl status isc-dhcp-server
-#}
+configure_dhcp() {
+    echo $'default-lease-time 600;
+max-lease-time 7200;
+
+ddns-update-style none;
+
+authoritative;
+
+subnet '$NETWORK_INTERNET' netmask '$MASK_INTERNET' {
+  range '$DHCP_INTERNET_RANGE_BEGIN' '$DHCP_INTERNET_RANGE_END';
+  option domain-name-servers '$DNS_INTERNET';
+  option domain-name "'$DOMAIN_NAME'";
+  option subnet-mask '$MASK_INTERNET';
+  option routers '$GW_INTERNET';
+  option broadcast-address '$BROADCAST_INTERNET';
+  default-lease-time 600;
+  max-lease-time 7200;
+}
+
+host '$HOSTNAME_SW_HP'    {hardware ethernet '$MAC_SW_HP'; fixed-address '$IP_INTERNET_SW_HP';}
+
+host '$HOSTNAME_INFRA0'     {hardware ethernet '$MAC_INFRA0'; fixed-address '$IP_INTERNET_INFRA0';}
+host '$HOSTNAME_COMPUTE00'  {hardware ethernet '$MAC_COMPUTE00'; fixed-address '$IP_INTERNET_COMPUTE00';}
+host '$HOSTNAME_COMPUTE01'  {hardware ethernet '$MAC_COMPUTE01'; fixed-address '$IP_INTERNET_COMPUTE01';}
+host '$HOSTNAME_COMPUTE02'  {hardware ethernet '$MAC_COMPUTE02'; fixed-address '$IP_INTERNET_COMPUTE02';}
+
+host '$HOSTNAME_RARITAN'    {hardware ethernet '$MAC_RARITAN'; fixed-address '$IP_INTERNET_RARITAN';}
+host '$HOSTNAME_RWIN'    {hardware ethernet '$MAC_RWIN'; fixed-address '$IP_INTERNET_RWIN';}' > /etc/dhcp/dhcpd.conf
+
+    systemctl enable isc-dhcp-server    
+    systemctl start isc-dhcp-server
+
+}
 
 configure_dns() {
     systemctl stop systemd-resolved
@@ -298,9 +281,8 @@ zone "'$REVERSE_NETWORK'.in-addr.arpa" IN {
 ns1             A       '$DNS_INTERNET'
 ns2             A       '$DNS_INTERNET'
 
-'$HOSTNAME_SW_INTERNET'     A       '$IP_INTERNET_SW_INTERNET'
-'$HOSTNAME_SW_MGMT'         A       '$IP_INTERNET_SW_MGMT'
-'$HOSTNAME_SW_TENANT'       A       '$IP_INTERNET_SW_TENANT'
+'$HOSTNAME_RT_INTERNET'     A       '$IP_INTERNET_RT_INTERNET'
+'$HOSTNAME_SW_HP'	    A       '$IP_INTERNET_SW_HP'
 
 '$HOSTNAME_INFRA0'          A       '$IP_INTERNET_INFRA0'
 '$HOSTNAME_COMPUTE00'       A       '$IP_INTERNET_COMPUTE00'
@@ -310,9 +292,8 @@ ns2             A       '$DNS_INTERNET'
 '$HOSTNAME_RARITAN'         A       '$IP_INTERNET_RARITAN > /etc/bind/domains/"$DOMAIN_NAME"/db."$DOMAIN_NAME"
 
     REVERSE_DNS=$(echo "$DNS_INTERNET" | cut -d"." -f4)
-    REVERSE_SW_INTERNET=$(echo "$IP_INTERNET_SW_INTERNET" | cut -d"." -f4)
-    REVERSE_SW_MGMT=$(echo "$IP_INTERNET_SW_MGMT" | cut -d"." -f4)
-    REVERSE_SW_TENANT=$(echo "$IP_INTERNET_SW_TENANT" | cut -d"." -f4)
+    REVERSE_RT_INTERNET=$(echo "$IP_INTERNET_RT_INTERNET" | cut -d"." -f4)
+    REVERSE_SW_HP=$(echo "$IP_INTERNET_SW_HP" | cut -d"." -f4)
     REVERSE_INFRA0=$(echo "$IP_INTERNET_INFRA0" | cut -d"." -f4)
     REVERSE_COMPUTE00=$(echo "$IP_INTERNET_COMPUTE00" | cut -d"." -f4)
     REVERSE_COMPUTE01=$(echo "$IP_INTERNET_COMPUTE01" | cut -d"." -f4)
@@ -331,20 +312,23 @@ ns2             A       '$DNS_INTERNET'
 '$REVERSE_DNS'     PTR     smtp2.'$DOMAIN_NAME'.
 '$REVERSE_DNS'     PTR     pop3.'$DOMAIN_NAME'.
 
-'$REVERSE_SW_INTERNET'     PTR     '$HOSTNAME_SW_INTERNET'.'$DOMAIN_NAME'.
-'$REVERSE_SW_MGMT'     PTR     '$HOSTNAME_SW_MGMT'.'$DOMAIN_NAME'.
-'$REVERSE_SW_TENANT'     PTR     '$HOSTNAME_SW_TENANT'.'$DOMAIN_NAME'.
+'$REVERSE_RT_INTERNET'	PTR     '$HOSTNAME_RT_INTERNET'.'$DOMAIN_NAME'.
+'$REVERSE_SW_HP'     	PTR     '$HOSTNAME_SW_HP'.'$DOMAIN_NAME'.
 
-'$REVERSE_INFRA0'     PTR     '$HOSTNAME_INFRA0'.'$DOMAIN_NAME'.
-'$REVERSE_COMPUTE00'     PTR     '$HOSTNAME_COMPUTE00'.'$DOMAIN_NAME'.
-'$REVERSE_COMPUTE01'     PTR     '$HOSTNAME_COMPUTE01'.'$DOMAIN_NAME'.
-'$REVERSE_COMPUTE02'     PTR     '$HOSTNAME_COMPUTE02'.'$DOMAIN_NAME'.
+'$REVERSE_INFRA0'     	PTR     '$HOSTNAME_INFRA0'.'$DOMAIN_NAME'.
+'$REVERSE_COMPUTE00'    PTR     '$HOSTNAME_COMPUTE00'.'$DOMAIN_NAME'.
+'$REVERSE_COMPUTE01'    PTR     '$HOSTNAME_COMPUTE01'.'$DOMAIN_NAME'.
+'$REVERSE_COMPUTE02'    PTR     '$HOSTNAME_COMPUTE02'.'$DOMAIN_NAME'.
 
-'$REVERSE_RARITAN'     PTR     '$HOSTNAME_RARITAN'.'$DOMAIN_NAME'.' > /etc/bind/domains/"$DOMAIN_NAME"/db."$REVERSE_NETWORK"
+'$REVERSE_RARITAN'     	PTR     '$HOSTNAME_RARITAN'.'$DOMAIN_NAME'.' > /etc/bind/domains/"$DOMAIN_NAME"/db."$REVERSE_NETWORK"
 
     rm -rf /etc/resolv.conf
     echo $'search '$DOMAIN_NAME'
 nameserver 127.0.0.1' > /etc/resolv.conf
+}
+
+configure_vpn() {
+  echo ""
 }
 
 if [[ $EUID -ne 0 ]]; then
@@ -355,13 +339,13 @@ fi
 source parameters.conf
 
 HOSTNAME=$(hostname)
+HOME_DIR=$(eval echo "~$different_user")
 
 update_SO;
 configure_network;
 configure_dpdk;
 configure_ovs;
-configure_ryu;
 configure_firewall;
-#configure_dhcp;
+configure_dhcp;
 configure_dns;
-
+configure_vpn;
