@@ -36,4 +36,6 @@ interface 17
 enable
 interface 18
 enable
+show interfaces brief
+
 ```

@@ -33,19 +33,19 @@ configure_ssh() {
   cat /root/.ssh/id_rsa.pub | sudo tee --append /root/.ssh/authorized_keys
 
   printf '\n\e[1;33m%-6s\e[m\n' 'Configuring Compute00...'
-  sshpass -p "$PASSWORD" ssh -t "$CURRENT_USER"@"$IP_INTERNET_COMPUTE00" "echo "$PASSWORD" | sudo -S rm -rf "$HOME_DIR"/.ssh/; exit"
-  sshpass -p "$PASSWORD" scp -r /root/.ssh "$CURRENT_USER"@"$IP_INTERNET_COMPUTE00":"$HOME_DIR"/
-  sshpass -p "$PASSWORD" ssh -t "$CURRENT_USER"@"$IP_INTERNET_COMPUTE00" "echo "$PASSWORD" | sudo -S rm -rf /root/.ssh/; sudo mkdir /root/.ssh/; sudo cp "$HOME_DIR"/.ssh/* /root/.ssh/; sudo sed -i -- 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config; sudo systemctl restart ssh; echo""; sudo passwd root; exit"
+  sshpass -p "$PASSWORD" ssh -t "$CURRENT_USER"@"$IP_INTERNET_COMPUTE00" "echo "$PASSWORD" | sudo -S rm -rf ~/.ssh/ 2> /dev/null; exit"
+  sshpass -p "$PASSWORD" scp -r /root/.ssh "$CURRENT_USER"@"$IP_INTERNET_COMPUTE00":~/
+  sshpass -p "$PASSWORD" ssh -t "$CURRENT_USER"@"$IP_INTERNET_COMPUTE00" "echo "$PASSWORD" | sudo -S rm -rf /root/.ssh/ 2> /dev/null; sudo mkdir /root/.ssh/; sudo cp ~/.ssh/* /root/.ssh/; sudo sed -i -- 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config; sudo systemctl restart ssh; echo""; sudo passwd root; exit"
 
   printf '\n\e[1;33m%-6s\e[m\n' 'Configuring Compute01...'
-  sshpass -p "$PASSWORD" ssh -t "$CURRENT_USER"@"$IP_INTERNET_COMPUTE01" "echo "$PASSWORD" | sudo -S rm -rf "$HOME_DIR"/.ssh/; exit"
-  sshpass -p "$PASSWORD" scp -r /root/.ssh "$CURRENT_USER"@"$IP_INTERNET_COMPUTE01":"$HOME_DIR"/
-  sshpass -p "$PASSWORD" ssh -t "$CURRENT_USER"@"$IP_INTERNET_COMPUTE01" "echo "$PASSWORD" | sudo -S rm -rf /root/.ssh/; sudo mkdir /root/.ssh/; sudo cp "$HOME_DIR"/.ssh/* /root/.ssh/; sudo sed -i -- 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config; sudo systemctl restart ssh; echo""; sudo passwd root; exit"
+  sshpass -p "$PASSWORD" ssh -t "$CURRENT_USER"@"$IP_INTERNET_COMPUTE01" "echo "$PASSWORD" | sudo -S rm -rf ~/.ssh/ 2> /dev/null; exit"
+  sshpass -p "$PASSWORD" scp -r /root/.ssh "$CURRENT_USER"@"$IP_INTERNET_COMPUTE01":~/
+  sshpass -p "$PASSWORD" ssh -t "$CURRENT_USER"@"$IP_INTERNET_COMPUTE01" "echo "$PASSWORD" | sudo -S rm -rf /root/.ssh/ 2> /dev/null; sudo mkdir /root/.ssh/; sudo cp ~/.ssh/* /root/.ssh/; sudo sed -i -- 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config; sudo systemctl restart ssh; echo""; sudo passwd root; exit"
 
   printf '\n\e[1;33m%-6s\e[m\n' 'Configuring Compute02...'
-  sshpass -p "$PASSWORD" ssh -t "$CURRENT_USER"@"$IP_INTERNET_COMPUTE02" "echo "$PASSWORD" | sudo -S rm -rf "$HOME_DIR"/.ssh/; exit"
-  sshpass -p "$PASSWORD" scp -r /root/.ssh "$CURRENT_USER"@"$IP_INTERNET_COMPUTE02":"$HOME_DIR"/
-  sshpass -p "$PASSWORD" ssh -t "$CURRENT_USER"@"$IP_INTERNET_COMPUTE02" "echo "$PASSWORD" | sudo -S rm -rf /root/.ssh/; sudo mkdir /root/.ssh/; sudo cp "$HOME_DIR"/.ssh/* /root/.ssh/; sudo sed -i -- 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config; sudo systemctl restart ssh; echo""; sudo passwd root; exit"
+  sshpass -p "$PASSWORD" ssh -t "$CURRENT_USER"@"$IP_INTERNET_COMPUTE02" "echo "$PASSWORD" | sudo -S rm -rf ~/.ssh/ 2> /dev/null; exit"
+  sshpass -p "$PASSWORD" scp -r /root/.ssh "$CURRENT_USER"@"$IP_INTERNET_COMPUTE02":~/
+  sshpass -p "$PASSWORD" ssh -t "$CURRENT_USER"@"$IP_INTERNET_COMPUTE02" "echo "$PASSWORD" | sudo -S rm -rf /root/.ssh/ 2> /dev/null; sudo mkdir /root/.ssh/; sudo cp ~/.ssh/* /root/.ssh/; sudo sed -i -- 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config; sudo systemctl restart ssh; echo""; sudo passwd root; exit"
 
   printf '\n\e[1;33m%-6s\e[m\n' 'Testing ssh direct connection to servers...'
   ssh root@"$IP_MGMT_INFRA0" 'exit'
@@ -124,14 +124,6 @@ global_overrides:
         group_binds:
           - neutron_linuxbridge_agent
     - network:
-        group_binds:
-          - neutron_linuxbridge_agent
-        container_bridge: "'$BOND'.'$VLAN_TAG_INTERNET_VM'"
-        container_type: "veth"
-        container_interface: "eth11"
-        type: "flat"
-        net_name: "'$OPENSTACK_EXTERNAL_NETWORK'"
-    - network:
         container_bridge: "'$OVS_BRIDGE_STORAGE'"
         container_type: "veth"
         container_interface: "eth2"
@@ -142,6 +134,22 @@ global_overrides:
           - cinder_api
           - cinder_volume
           - nova_compute
+    - network:
+        group_binds:
+          - neutron_linuxbridge_agent
+        container_bridge: "'$BOND'.'$VLAN_TAG_INTERNET_ADMIN'"
+        container_type: "veth"
+        container_interface: "eth11"
+        type: "flat"
+        net_name: "'$OPENSTACK_EXTERNAL_NETWORK_ADMIN'"
+    - network:
+        group_binds:
+          - neutron_linuxbridge_agent
+        container_bridge: "'$BOND'.'$VLAN_TAG_INTERNET_VM'"
+        container_type: "veth"
+        container_interface: "eth12"
+        type: "flat"
+        net_name: "'$OPENSTACK_EXTERNAL_NETWORK_VM'"
 
 ###
 ### Infrastructure
@@ -230,7 +238,7 @@ configure_openstack() {
   git checkout -b 18.1.1 18.1.1
   ./scripts/bootstrap-ansible.sh
   cp -R etc/openstack_deploy /etc/
-  cp "$HOME_DIR"/openstack_user_config.yml /etc/openstack_deploy/openstack_user_config.yml
+  cp "$BUILD_DIR"/openstack_user_config.yml /etc/openstack_deploy/openstack_user_config.yml
   echo -e 'install_method: "source"
 galera_monitoring_allowed_source: "0.0.0.0/0"
 neutron_l2_population: "true"
@@ -257,7 +265,6 @@ fi
 HOSTNAME=$(hostname)
 BUILD_DIR=$(pwd)
 CURRENT_USER=${SUDO_USER:-${USER}}
-HOME_DIR=$(eval echo "~$different_user")
 
 if [ "$HOSTNAME" = "$HOSTNAME_INFRA0" ]
 then

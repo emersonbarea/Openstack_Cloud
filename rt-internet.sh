@@ -35,9 +35,14 @@ iface '$OVS_BRIDGE_INTERNET' inet static
     address '$IP_INTERNET_RT_INTERNET'
     netmask '$MASK_INTERNET'
 
+allow-hotplug '$OVS_BRIDGE_INTERNET_VM_ADMIN'
+iface '$OVS_BRIDGE_INTERNET_VM_ADMIN' inet static
+    address '$IP_INTERNET_RT_INTERNET_VM_ADMIN'
+    netmask '$MASK_INTERNET_ADMIN'
+    
 allow-hotplug '$OVS_BRIDGE_INTERNET_VM'
 iface '$OVS_BRIDGE_INTERNET_VM' inet static
-    address '$IP_INTERNET_VM_RT_INTERNET'
+    address '$IP_INTERNET_RT_INTERNET_VM'
     netmask '$MASK_INTERNET_VM > /etc/network/interfaces
 }
 
@@ -75,17 +80,19 @@ configure_ovs() {
 
     ovs-vsctl del-br "$OVS_BRIDGE_INTERNET" 2> /dev/null
     ovs-vsctl add-br "$OVS_BRIDGE_INTERNET" -- set bridge "$OVS_BRIDGE_INTERNET" datapath_type=netdev
-
     ovs-vsctl add-port "$OVS_BRIDGE_INTERNET" dpdk-p0 -- set Interface dpdk-p0 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:00:14.0 ofport=1
-    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET" dpdk-p1 -- set Interface dpdk-p1 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:00:14.1 ofport=2
-    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET" dpdk-p2 -- set Interface dpdk-p2 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:00:14.2 ofport=3
+   
+    ovs-vsctl del-br "$OVS_BRIDGE_INTERNET_VM_ADMIN" 2> /dev/null
+    ovs-vsctl add-br "$OVS_BRIDGE_INTERNET_VM_ADMIN" -- set bridge "$OVS_BRIDGE_INTERNET_VM_ADMIN" datapath_type=netdev
+    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET_VM_ADMIN" dpdk-p1 -- set Interface dpdk-p1 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:00:14.1 ofport=2
 
     ovs-vsctl del-br "$OVS_BRIDGE_INTERNET_VM" 2> /dev/null
     ovs-vsctl add-br "$OVS_BRIDGE_INTERNET_VM" -- set bridge "$OVS_BRIDGE_INTERNET_VM" datapath_type=netdev
+    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET_VM" dpdk-p2 -- set Interface dpdk-p2 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:00:14.2 ofport=3
 
-    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET_VM" dpdk-p3 -- set Interface dpdk-p3 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:00:14.3 ofport=4
-    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET_VM" dpdk-p4 -- set Interface dpdk-p4 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:05:00.0 ofport=5
-    ovs-vsctl add-port "$OVS_BRIDGE_INTERNET_VM" dpdk-p5 -- set Interface dpdk-p5 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:05:00.1 ofport=6
+    #ovs-vsctl add-port "$OVS_BRIDGE_INTERNET_VM" dpdk-p3 -- set Interface dpdk-p3 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:00:14.3 ofport=4
+    #ovs-vsctl add-port "$OVS_BRIDGE_INTERNET_VM" dpdk-p4 -- set Interface dpdk-p4 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:05:00.0 ofport=5
+    #ovs-vsctl add-port "$OVS_BRIDGE_INTERNET_VM" dpdk-p5 -- set Interface dpdk-p5 type=dpdk mtu_request=9600 options:dpdk-devargs=0000:05:00.1 ofport=6
 }
 
 
@@ -94,9 +101,17 @@ echo $'#!/bin/bash
 
 # Definition of variables
 ipt="/sbin/iptables"
+
 INTERNET_IF="eth4"
 INTERNAL_IF="'$OVS_BRIDGE_INTERNET'"
 INTERNAL_IF_VM="'$OVS_BRIDGE_INTERNET_VM'"
+INTERNAL_IF_VM_ADMIN="'$OVS_BRIDGE_INTERNET_VM_ADMIN'"
+
+VPN_NET_ADMIN="'$NETWORK_VPN_NET_ADMIN'/'$PREFIX_LENGTH_VPN_NET_ADMIN'"
+VPN_NET_VM="'$NETWORK_VPN_NET_VM'/'$PREFIX_LENGTH_VPN_NET_VM'"
+
+VM_NET_ADMIN="'$NETWORK_INTERNET_ADMIN'/'$PREFIX_LENGTH_INTERNET_VM'"
+VM_NET_VM="'$NETWORK_INTERNET_VM'/'$PREFIX_LENGTH_VPN_NET_VM'"
 
 case $1 in
 start)
@@ -124,14 +139,19 @@ $ipt -A INPUT -i lo -j ACCEPT
 # Handling established connections
 $ipt -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
+# OpenVPN rules
+$ipt -A INPUT -i $INTERNET_IF -p udp --dport 1194 -j ACCEPT
+
 # DNS requests
 $ipt -A INPUT -i $INTERNAL_IF -p udp --dport 53 -j ACCEPT
 $ipt -A INPUT -i $INTERNAL_IF_VM -p udp --dport 53 -j ACCEPT
+$ipt -A INPUT -i $INTERNAL_IF_VM_ADMIN -p udp --dport 53 -j ACCEPT
 
 # Ping rule
 $ipt -A INPUT -p icmp --icmp-type echo-request -i $INTERNET_IF -m limit --limit 1/s -j ACCEPT
 $ipt -A INPUT -p icmp --icmp-type echo-request -i $INTERNAL_IF -j ACCEPT
 $ipt -A INPUT -p icmp --icmp-type echo-request -i $INTERNAL_IF_VM -j ACCEPT
+$ipt -A INPUT -p icmp --icmp-type echo-request -i $INTERNAL_IF_VM_ADMIN -j ACCEPT
 
 # SSH rule
 $ipt -A INPUT -p tcp --dport 22 -j ACCEPT
@@ -145,12 +165,19 @@ $ipt -A FORWARD -i lo -j ACCEPT
 $ipt -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 # Internet access
-$ipt -A FORWARD -i $INTERNAL_IF -j ACCEPT
-$ipt -A FORWARD -i $INTERNAL_IF_VM -j ACCEPT
+$ipt -A FORWARD -i $INTERNAL_IF -o $INTERNET_IF -j ACCEPT
+$ipt -A FORWARD -i $INTERNAL_IF_VM -o $INTERNET_IF -j ACCEPT
+$ipt -A FORWARD -i $INTERNAL_IF_VM_ADMIN -o $INTERNET_IF -j ACCEPT
+
+# VPN nets rules
+$ipt -A FORWARD -s $VPN_NET_ADMIN -j ACCEPT
+$ipt -A FORWARD -s $VPN_NET_VM -d $VM_NET_VM -j ACCEPT
 
 # Ping rule 
-$ipt -A FORWARD -p icmp --icmp-type echo-request -i $INTERNAL_IF -j ACCEPT
-$ipt -A FORWARD -p icmp --icmp-type echo-request -i $INTERNAL_IF_VM -j ACCEPT
+$ipt -A FORWARD -p icmp --icmp-type echo-request -i $INTERNAL_IF -o $INTERNET_IF -j ACCEPT
+$ipt -A FORWARD -p icmp --icmp-type echo-request -i $INTERNAL_IF_VM -o $INTERNET_IF -j ACCEPT
+$ipt -A FORWARD -p icmp --icmp-type echo-request -i $INTERNAL_IF_VM_ADMIN -o $INTERNET_IF -j ACCEPT
+$ipt -A FORWARD -p icmp --icmp-type echo-request -s $VPN_NET_ADMIN -j ACCEPT
 
 
 #*********************** ROUTING ********************************#
@@ -246,10 +273,10 @@ host '$HOSTNAME_COMPUTE01'  {hardware ethernet '$MAC_COMPUTE01'; fixed-address '
 host '$HOSTNAME_COMPUTE02'  {hardware ethernet '$MAC_COMPUTE02'; fixed-address '$IP_INTERNET_COMPUTE02';}
 
 host '$HOSTNAME_RARITAN'    {hardware ethernet '$MAC_RARITAN'; fixed-address '$IP_INTERNET_RARITAN';}
-host '$HOSTNAME_RWIN'    {hardware ethernet '$MAC_RWIN'; fixed-address '$IP_INTERNET_RWIN';}' > /etc/dhcp/dhcpd.conf
+host '$HOSTNAME_DESKTOP00'    {hardware ethernet '$MAC_DESKTOP00'; fixed-address '$IP_INTERNET_DESKTOP00';}' > /etc/dhcp/dhcpd.conf
 
     systemctl enable isc-dhcp-server    
-    systemctl start isc-dhcp-server
+    systemctl restart isc-dhcp-server
 
 }
 
@@ -289,7 +316,9 @@ ns2             A       '$DNS_INTERNET'
 '$HOSTNAME_COMPUTE01'       A       '$IP_INTERNET_COMPUTE01'
 '$HOSTNAME_COMPUTE02'       A       '$IP_INTERNET_COMPUTE02'
 
-'$HOSTNAME_RARITAN'         A       '$IP_INTERNET_RARITAN > /etc/bind/domains/"$DOMAIN_NAME"/db."$DOMAIN_NAME"
+'$HOSTNAME_CASERVER'        A       '$IP_INTERNET_CASERVER'
+'$HOSTNAME_RARITAN'         A       '$IP_INTERNET_RARITAN'
+'$HOSTNAME_DESKTOP00'       A       '$IP_INTERNET_DESKTOP00 > /etc/bind/domains/"$DOMAIN_NAME"/db."$DOMAIN_NAME"
 
     REVERSE_DNS=$(echo "$DNS_INTERNET" | cut -d"." -f4)
     REVERSE_RT_INTERNET=$(echo "$IP_INTERNET_RT_INTERNET" | cut -d"." -f4)
@@ -299,6 +328,7 @@ ns2             A       '$DNS_INTERNET'
     REVERSE_COMPUTE01=$(echo "$IP_INTERNET_COMPUTE01" | cut -d"." -f4)
     REVERSE_COMPUTE02=$(echo "$IP_INTERNET_COMPUTE02" | cut -d"." -f4)
     REVERSE_RARITAN=$(echo "$IP_INTERNET_RARITAN" | cut -d"." -f4)
+    REVERSE_DESKTOP00=$(echo "$IP_INTERNET_DESKTOP00" | cut -d"." -f4)
 
     echo $'@    IN SOA ns1.'$DOMAIN_NAME'. hostmaster.'$DOMAIN_NAME'. (
         2009032001 3H 15M 2W 1D )
@@ -320,7 +350,8 @@ ns2             A       '$DNS_INTERNET'
 '$REVERSE_COMPUTE01'    PTR     '$HOSTNAME_COMPUTE01'.'$DOMAIN_NAME'.
 '$REVERSE_COMPUTE02'    PTR     '$HOSTNAME_COMPUTE02'.'$DOMAIN_NAME'.
 
-'$REVERSE_RARITAN'     	PTR     '$HOSTNAME_RARITAN'.'$DOMAIN_NAME'.' > /etc/bind/domains/"$DOMAIN_NAME"/db."$REVERSE_NETWORK"
+'$REVERSE_RARITAN'     	PTR     '$HOSTNAME_RARITAN'.'$DOMAIN_NAME'. 
+'$REVERSE_DESKTOP00'    PTR     '$HOSTNAME_DESKTOP00'.'$DOMAIN_NAME'.' > /etc/bind/domains/"$DOMAIN_NAME"/db."$REVERSE_NETWORK"
 
     rm -rf /etc/resolv.conf
     echo $'search '$DOMAIN_NAME'

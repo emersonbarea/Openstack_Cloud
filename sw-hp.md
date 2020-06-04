@@ -2,7 +2,6 @@ To configure the HP switch, Ctrl+c and Ctrl+v the configuration bellow:
 
 ```configure terminal
 hostname "sw-hp"
-module 1 type j9147a
 trunk 1-4 trk1 lacp
 trunk 5-8 trk2 lacp
 trunk 9-12 trk3 lacp
@@ -12,15 +11,12 @@ interface 14
    disable
    name "PORTA COM DEFEITO"
    exit
-snmp-server community "public" unrestricted
-spanning-tree Trk1 priority 4
-spanning-tree Trk2 priority 4
-spanning-tree Trk3 priority 4
-spanning-tree Trk4 priority 4
+no snmp-server enable
+no snmp-server community "public" unrestricted
 vlan 1
    name "vlan-internet"
-   no untagged 47
-   untagged 13-14,19-46,48,Trk1-Trk4
+   no untagged 46-47
+   untagged 13-14,19-45,48,Trk1-Trk4
    ip address 192.168.200.253 255.255.255.0
    exit
 vlan 16
@@ -39,10 +35,16 @@ vlan 18
    ip address 172.16.2.254 255.255.255.0
    exit
 vlan 201
-   name "vlan-internet-vm"
+   name "vlan-internet-admin"
    untagged 47
    tagged Trk1-Trk4
    ip address 192.168.201.253 255.255.255.0
+   exit
+vlan 202
+   name "vlan-internet-vm"
+   untagged 46
+   tagged Trk1-Trk4
+   ip address 192.168.202.253 255.255.255.0
    exit
 no autorun```
 

@@ -123,6 +123,10 @@ auto '$BOND'.'$VLAN_TAG_STORAGE'
 iface '$BOND'.'$VLAN_TAG_STORAGE' inet manual
     vlan-raw-device '$BOND'
 
+auto '$BOND'.'$VLAN_TAG_INTERNET_ADMIN'
+iface '$BOND'.'$VLAN_TAG_INTERNET_ADMIN' inet manual
+    vlan-raw-device '$BOND'
+
 auto '$BOND'.'$VLAN_TAG_INTERNET_VM'
 iface '$BOND'.'$VLAN_TAG_INTERNET_VM' inet manual
     vlan-raw-device '$BOND'
