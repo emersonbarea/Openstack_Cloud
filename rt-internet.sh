@@ -149,9 +149,7 @@ $ipt -A INPUT -i $INTERNAL_IF_VM_ADMIN -p udp --dport 53 -j ACCEPT
 
 # Ping rule
 $ipt -A INPUT -p icmp --icmp-type echo-request -i $INTERNET_IF -m limit --limit 1/s -j ACCEPT
-$ipt -A INPUT -p icmp --icmp-type echo-request -i $INTERNAL_IF -j ACCEPT
-$ipt -A INPUT -p icmp --icmp-type echo-request -i $INTERNAL_IF_VM -j ACCEPT
-$ipt -A INPUT -p icmp --icmp-type echo-request -i $INTERNAL_IF_VM_ADMIN -j ACCEPT
+$ipt -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
 
 # SSH rule
 $ipt -A INPUT -p tcp --dport 22 -j ACCEPT
@@ -358,10 +356,6 @@ ns2             A       '$DNS_INTERNET'
 nameserver 127.0.0.1' > /etc/resolv.conf
 }
 
-configure_vpn() {
-  echo ""
-}
-
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 
    exit 1
@@ -379,4 +373,3 @@ configure_ovs;
 configure_firewall;
 configure_dhcp;
 configure_dns;
-configure_vpn;

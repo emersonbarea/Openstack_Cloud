@@ -24,4 +24,4 @@ printf '\n\e[1;33m%-6s\e[m\n' 'Accessing Compute02 Server...'
 scp ./parameters.conf ./all_openstack_servers.sh "$WHOAMI"@"$TEMP_IP_COMPUTE02":"$USER_HOME"/
 
 printf '\n\e[1;33m%-6s\e[m\n' 'Accessing rt-internet Router...'
-scp ./parameters.conf ./rt-internet.sh "$WHOAMI"@"$TEMP_IP_RT_INTERNET":"$USER_HOME"/
+scp ./parameters.conf ./rt-internet.sh ./rt-internet_configure_vpn.sh "$WHOAMI"@"$TEMP_IP_RT_INTERNET":"$USER_HOME"/
