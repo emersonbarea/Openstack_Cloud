@@ -13,5 +13,4 @@ enable
 interface 15
 enable
 show interfaces brief
-
 ```
