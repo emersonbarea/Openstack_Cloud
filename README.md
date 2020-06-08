@@ -89,63 +89,56 @@ cd /root
 source openrc
 ```
 
-#### ssh Key
+#### Generate ssh Key to be used in VMs
 
-openstack keypair create default > default.pem
+```openstack keypair create default > default.pem```
 
 
-# IMAGES
+#### Download image ISO files and create Openstack images
 
-wget http://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img
+```
 wget http://download.cirros-cloud.net/0.5.1/cirros-0.5.1-x86_64-disk.img
 wget https://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img
 
-openstack image create --file xenial-server-cloudimg-amd64-disk1.img --disk-format qcow2 --container-format bare --public xenial-server
 openstack image create --file cirros-0.5.1-x86_64-disk.img --disk-format qcow2 --container-format bare --public cirros
 openstack image create --file bionic-server-cloudimg-amd64.img --disk-format qcow2 --container-format bare --public bionic-server
+```
 
-# FLAVORS
+#### Create Flavors
 
+```
 openstack flavor create --ram 512 --disk 1 --vcpus 1 m1.tiny
 openstack flavor create --ram 2048 --disk 20 --vcpus 1 m1.small
 openstack flavor create --ram 4096 --disk 40 --vcpus 1 m1.medium
 openstack flavor create --ram 8192 --disk 80 --vcpus 1 m1.large
 openstack flavor create --ram 16384 --disk 160 --vcpus 1 m1.xlarge
+```
 
-# ADMINISTRATIVE EXTERNAL NETWORK
+#### Create Admin External Network
 
+```
 openstack network create --external external-admin-net --availability-zone-hint nova --provider-network-type flat --provider-physical-network padmin --share
 
 openstack subnet create --network external-admin-net --subnet-range 192.168.201.0/24 --allocation-pool start=192.168.201.1,end=192.168.201.200 --dhcp --gateway 192.168.201.254 --ip-version 4 --dns-nameserver 192.168.200.254 external-admin-subnet
+```
 
-# CA-SERVER
+#### Import CA-Server snapshot image
+
+```
 openstack security group create --description "Security Group to CA-Server virtual host" CA-Server-Security-Group
 openstack security group rule create --ingress --protocol icmp --remote-ip 0.0.0.0/0 CA-Server-Security-Group
-
-
-
-
-#regra momentanea
 openstack security group rule create --ingress --protocol tcp --remote-ip 0.0.0.0/0 CA-Server-Security-Group
 openstack security group rule create --ingress --protocol udp --remote-ip 0.0.0.0/0 CA-Server-Security-Group
+```
+
+```openstack image create CA-Server --container-format bare --disk-format qcow2 --file CA-Server.raw```
+
+```openstack server create --flavor m1.small --image CA-Server --key-name default --nic net-id=$(openstack network show external-admin-net | grep " id" | awk '{print $4}'),v4-fixed-ip=192.168.201.252 --security-group CA-Server-Security-Group CA-Server```
 
 
+#### Create VMs External Network
 
-
-openstack server create --flavor m1.small --image bionic-server --key-name default --nic net-id=$(openstack network show external-admin-net | grep " id" | awk '{print $4}'),v4-fixed-ip=192.168.201.252 --security-group CA-Server-Security-Group CA-Server
-
-# SECURITY GROUP PERMIT ALL
-openstack security group create --description "Security Group Description" Security-Group-Name
-openstack security group rule create --ingress --protocol icmp --remote-ip 0.0.0.0/0 Security-Group-Name
-openstack security group rule create --ingress --protocol tcp --remote-ip 0.0.0.0/0 Security-Group-Name
-openstack security group rule create --ingress --protocol udp --remote-ip 0.0.0.0/0 Security-Group-Name
-
-# ANOTHER EXTERNAL HOST (EXAMPLE - dynamic IP attribution)
-####openstack server create --flavor m1.small --image bionic-server --key-name default --network external-admin-net ServerName
-
-
-# VM EXTERNAL NETWORK
-openstack network create --external external-vm-net --availability-zone-hint nova --provider-network-type flat --provider-physical-network pvm --share
+```openstack network create --external external-vm-net --availability-zone-hint nova --provider-network-type flat --provider-physical-network pvm --share
 openstack subnet create --network external-vm-net --subnet-range 192.168.202.0/24 --allocation-pool start=192.168.202.1,end=192.168.202.200 --dhcp --gateway 192.168.202.254 --ip-version 4 --dns-nameserver 192.168.200.254 external-vm-subnet
 
 openstack network create --internal --availability-zone-hint nova internal-net
@@ -161,6 +154,7 @@ openstack server create --flavor m1.tiny --image cirros --key-name default --net
 openstack server show cirros_2
 
 openstack server create --flavor m1.tiny --image cirros --key-name default cirros_1 --availability-zone nova:compute00
+```
 
 ## VM BACKUP AND RESTORE (USING SNAPSHOT)
 
