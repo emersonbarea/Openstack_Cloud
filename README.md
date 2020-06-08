@@ -178,6 +178,8 @@ openstack server create --flavor m1.tiny --image cirros --key-name default cirro
 
 The VPN server should be configured only one time. If you want to create users, go to [Manage VPN Users](#manage-vpn-users) section.
 
+***Attention***: this procedure should be performed only after [Initial Openstack configuration](#initial-openstack-configuration) procedure.
+
 1. Restore the ```CA-Server``` raw image to the ```infra0``` server
 	- use ```scp``` or other transfer file program to do it.
 
