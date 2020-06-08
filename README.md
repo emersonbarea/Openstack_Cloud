@@ -81,10 +81,11 @@ Now, all network parameters should be read to install Openstack. Continue follow
 ## Initial Openstack configuration
 
 This procedures makes the initional Openstack configuration. To do it, follow the procedure below logged with ```root``` at ```infra0``` server:
-	- ```lxc-ls | grep infra_utility_container-```
-	- ```lxc-attach infra_utility_container-<*container identifier*>```
-	- ```cd /root```
-	- ```source openrc```
+
+1. ```lxc-ls | grep infra_utility_container-```
+2. ```lxc-attach infra_utility_container-<*container identifier*>```
+3. ```cd /root```
+4. ```source openrc```
 
 ### KEY
 
