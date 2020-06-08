@@ -1,6 +1,10 @@
 # Openstack-Cloud
 
+What do you want to do?
+
 [Install Openstack](#install-openstack)
+
+[Configure VPN Server](#configure-vpn-server)
 
 [Manage VPN Users](#manage-vpn-users)
 
@@ -71,5 +75,16 @@ Now, all network parameters should be read to install Openstack. Continue follow
 
      	- username: ```admin```
     	- password: ```<output of cat command above>```
+
+13. 
+
+## Configure VPN Server
+
+The VPN server should to be configured only one time. If you want create users, go to [Manage VPN Users](#manage-vpn-users).
+
+
+```rt-internet``` is 
+
+
 
 ## Manage VPN Users
