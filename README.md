@@ -12,7 +12,7 @@ Check ```parameters.conf``` file to verify if the parameters values represents y
 
 Now, log to ```rt-internet``` and execute the commands below:
 
-1. Access the HP switch 2910 by console, and ```Ctrl + c``` + ```Ctrl + v``` the configuration existent in [https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp.md](sw-hp.md) file.
+1. Access the HP switch 2910 by console, and ```Ctrl + c``` + ```Ctrl + v``` the configuration existent in [sw-hp.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp.md) file.
 
 1. execute ```cd ~/Openstack_Cloud``` and ```sudo rt-internet.sh```
 	- this procedure configures ```rw-internet``` to be a DHCP server, DNS server and Firewall server to other machines
