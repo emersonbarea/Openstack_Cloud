@@ -186,7 +186,7 @@ The VPN server should be configured only one time. If you want to create users, 
 
 ## Manage VPN Users
 
-1. Make sure ```CA-Server``` Openstack VM is up and running
+1. Make sure ```CA-Server``` VM is up and running in Openstack infrastructure
 
 2. Make sure ```rt-internet``` can ping and access ```CA-Server``` using ssh with ```root``` user (```ssh root@ca-server```)
 
