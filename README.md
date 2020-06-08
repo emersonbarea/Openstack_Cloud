@@ -4,9 +4,9 @@ What do you want to do?
 
 [Install Openstack](#install-openstack)
 
-[Configure VPN Server](#configure-vpn-server)
-
 [Initiate Openstack configuration](#initiate-openstack-configuration)
+
+[Configure VPN Server](#configure-vpn-server)
 
 [Manage VPN Users](#manage-vpn-users)
 
