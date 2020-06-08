@@ -1,6 +1,7 @@
-To configure the HP switch, Ctrl+c and Ctrl+v the configuration bellow:
+To configure the ```sw-hp```, ```Ctrl + c ``` and ```Ctrl + v``` the configuration below:
 
-```configure terminal
+```
+configure terminal
 hostname "sw-hp"
 trunk 1-4 trk1 lacp
 trunk 5-8 trk2 lacp
@@ -46,7 +47,8 @@ vlan 202
    tagged Trk1-Trk4
    ip address 192.168.202.253 255.255.255.0
    exit
-no autorun```
+no autorun
+```
 
 and create all users password (manager and operator) with the command bellow:
 
@@ -56,7 +58,7 @@ password all
 ```
 Obs.: you will be asked for users password
 
-To enable SSH access, Ctrl+c and Ctrl+v the commands bellow:
+To enable SSH access, ```Ctrl + c``` and ```Ctrl + v``` the commands bellow:
 
 ```
 configure terminal

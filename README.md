@@ -178,7 +178,7 @@ openstack server create --flavor m1.tiny --image cirros --key-name default cirro
 
 The VPN server should be configured only one time. If you want to create users, go to [Manage VPN Users](#manage-vpn-users) section.
 
-***Attention***: this procedure should be performed only after [Initial Openstack configuration](#initial-openstack-configuration) procedure.
+***Attention***: this procedure should be performed only after [Initial Openstack configuration](#initiate-openstack-configuration) procedure.
 
 1. At ```rt-internet```, execute the command below:
 	- ```sudo ./rt-internet_configure_vpn.sh```
