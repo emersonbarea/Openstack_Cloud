@@ -4,16 +4,18 @@ First of all, install Ubuntu Server LTS 18.04 on all servers and WhiteBox switch
 
 Connect all machines like [Openstack_Cloud.pdf](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf) topology.
 
-**Attention:** before next steps, make sure you have access to ```rt-internet``` (console or ssh). ```rt-internet``` must also be able to access internet using wget and ```apt```.
+**Attention:** before next steps, make sure you have access to ```rt-internet``` (console or ssh). ```rt-internet``` must also be able to access internet using ```wget``` and ```apt```.
 
 Go to ```rt-internet``` and run [git clone https://github.com/emersonbarea/Openstack_Cloud.git](https://github.com/emersonbarea/Openstack_Cloud).
 
-Check the ```parameters.conf``` file to verify the parameters that will be used to configure the testbed.
+Check ```parameters.conf``` file to verify if the parameters values represents your environment.
 
-**Attention:** all steps below must be performed from ```sw-internet```.
+Now, log to ```rt-internet``` and execute the commands below:
 
-1. execute ```sudo sw-internet_first_of_all.sh```
-	- this procedure configures ```sw-internet``` to be a dhcp server, dns server and firewall server to other machines
+1. Access the HP switch 2910 by console, and ```Ctrl + c``` + ```Ctrl + v``` the configuration existent in [https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp.md] ```sw-hp.md``` file.
+
+1. execute ```cd ~/Openstack_Cloud``` and ```sudo rt-internet.sh```
+	- this procedure configures ```rw-internet``` to be a DHCP server, DNS server and Firewall server to other machines
 	- now, you should be able to ```ping``` all servers and switches (by DNS name and IP)
 
 2. execute ```./scp.sh``` to copy the all corresponding files to each server and switch.
