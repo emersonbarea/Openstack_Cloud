@@ -186,3 +186,20 @@ The VPN server should be configured only one time. If you want to create users, 
 
 ## Manage VPN Users
 
+1. Make sure ```CA-Server``` Openstack VM is up and running
+
+2. Make sure ```rt-internet``` can ping and access ```CA-Server``` using ssh with ```root``` user (```ssh root@ca-server```)
+
+3. Put the usernames or identifiers into ```~/Openstack_Cloud/OpenVPN/users.conf``` file.
+	- Ex.:
+	```
+	Juclealdo Silva
+	Astrogenio Bordegas
+	Juju Neves
+	```
+
+2. execute the command below:
+	- ```sudo ./manage_vpn.sh```
+
+3. now, send the certificates to each user using secure channel, like scp:
+	Obs.: the certificates are in ```~/client-configs/files/```
