@@ -1,5 +1,8 @@
 # Openstack-Cloud
 
+
+## Install Openstack
+
 First of all, install Ubuntu Server LTS 18.04 on all servers and WhiteBox switch.
 
 Connect all machines like [Openstack_Cloud.pdf](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf) topology.
@@ -66,4 +69,3 @@ Now, all network parameters should be read to install Openstack. Continue follow
      	- username: ```admin```
     	- password: ```<output of cat command above>```
 
-    		
