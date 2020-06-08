@@ -10,13 +10,26 @@ Go to ```rt-internet``` and run [git clone https://github.com/emersonbarea/Opens
 
 Check ```parameters.conf``` file to verify if the parameters values represents your environment.
 
-Now, log to ```rt-internet``` and execute the commands below:
+Now, execute the procedures below:
 
-1. Access the HP switch 2910 by console, and ```Ctrl + c``` + ```Ctrl + v``` the configuration existent in [sw-hp.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp.md) file.
+1. Access the HP 2910 switch (```sw-hp```) by console, and ```Ctrl + c``` and ```Ctrl + v``` the configuration existent in [sw-hp.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp.md) file.
 
-1. execute ```cd ~/Openstack_Cloud``` and ```sudo rt-internet.sh```
-	- this procedure configures ```rw-internet``` to be a DHCP server, DNS server and Firewall server to other machines
-	- now, you should be able to ```ping``` all servers and switches (by DNS name and IP)
+2. On ```rt-internet``` machine, execute ```cd ~/Openstack_Cloud``` and ```sudo rt-internet.sh```
+	- this procedure configures ```rt-internet``` to be a DHCP server, DNS server and Firewall server to other machines
+	
+3. On ```sw-hp``` console, ```Ctrl + c``` and ```Ctrl + v``` the configuration existent in [sw-hp-shutdown_all_servers_interfaces.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp-shutdown_all_servers_interfaces.md) file.
+
+4. On ```sw-hp``` console, ```Ctrl + c``` and ```Ctrl + v``` the configuration existent in [sw-hp-up_only_first_network_interface_on_each_server.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp-up_only_first_network_interface_on_each_server.md) file.
+
+5. Go to ```infra0```, ```compute00```, ```compute01``` and ```compute02``` servers and find for the network interfaces with the mac address correspondent to the ```eth0``` interface of each server existent in the [topology file](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf), and execute the commands below:
+	- ```ifconfig <interface> up```
+	- ```dhclient <interface>```
+	- ```ifconfig```
+		- validate if the IP address configured by DHCP server correspond to the [topology](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf)
+
+
+
+
 
 2. execute ```./scp.sh``` to copy the all corresponding files to each server and switch.
 
