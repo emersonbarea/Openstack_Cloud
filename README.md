@@ -180,16 +180,9 @@ The VPN server should be configured only one time. If you want to create users, 
 
 ***Attention***: this procedure should be performed only after [Initial Openstack configuration](#initial-openstack-configuration) procedure.
 
-1. Restore the ```CA-Server``` raw image to the ```infra0``` server
-	- use ```scp``` or other transfer file program to do it.
-
-2. At ```infra0``` server, execute the commands below:
-	- 
-
-
 1. At ```rt-internet```, execute the command below:
 	- ```sudo ./rt-internet_configure_vpn.sh```
 
 
-
 ## Manage VPN Users
+
