@@ -202,4 +202,4 @@ The VPN server should be configured only one time. If you want to create users, 
 	- ```sudo ./manage_vpn.sh```
 
 3. now, send the certificates to each user using secure channel, like scp:
-	Obs.: the certificates are in ```~/client-configs/files/```
+	- Obs.: the certificates are in ```~/client-configs/files/```
