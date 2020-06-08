@@ -1,6 +1,6 @@
-1 - logging to sw-hp with manager user and password
+1 - log in to ```sw-hp``` with ```manager``` user and the correspondent password
 
-2 - Ctrl+c - Ctrl+v the code bellow:
+2 - ```Ctrl + c``` and ```Ctrl + v``` the commands below:
 
 ```
 configure terminal
@@ -37,5 +37,4 @@ enable
 interface 18
 enable
 show interfaces brief
-
 ```
