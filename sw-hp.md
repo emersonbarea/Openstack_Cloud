@@ -65,3 +65,6 @@ configure terminal
 crypto key generate ssh rsa bits 1024
 ip ssh
 ```
+
+***Attention:*** you need to save the final configuration executing the command below:
+   - ```write memory```
