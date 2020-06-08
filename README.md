@@ -2,13 +2,13 @@
 
 First of all, install Ubuntu Server LTS 18.04 on all servers and WhiteBox switches.
 
-Connect all machines like [Openstack_Cloud.pdf](https://github.com/emersonbarea/Openstack_Cloud/blob/master/Openstack_Cloud.pdf) topology.
+Connect all machines like [Openstack_Cloud.pdf](https://github.com/emersonbarea/Openstack_Cloud/topology/Openstack_Cloud.pdf) topology.
 
-**Attention:** before any step, make sure you have ssh access to ```sw-internet```. The ```sw-internet``` must also be able to access the internet.
+**Attention:** before next steps, make sure you have access to ```rt-internet``` (console or ssh). ```rt-internet``` must also be able to access the internet (wget and ```apt```).
 
-run [git clone https://github.com/emersonbarea/Openstack_Cloud.git](https://github.com/emersonbarea/Openstack_Cloud) in ```sw-internet```.
+Go to ```rt-internet``` and run [git clone https://github.com/emersonbarea/Openstack_Cloud.git](https://github.com/emersonbarea/Openstack_Cloud).
 
-Check the ```parameters.conf``` file to verify the parameters that will be used to configure automatically the servers and switches.
+Check the ```parameters.conf``` file to verify the parameters that will be used to configure the testbed.
 
 **Attention:** all steps below must be performed from ```sw-internet```.
 
