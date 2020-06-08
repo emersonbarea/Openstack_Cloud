@@ -351,6 +351,20 @@ ns2             A       '$DNS_INTERNET'
 '$REVERSE_RARITAN'     	PTR     '$HOSTNAME_RARITAN'.'$DOMAIN_NAME'. 
 '$REVERSE_DESKTOP00'    PTR     '$HOSTNAME_DESKTOP00'.'$DOMAIN_NAME'.' > /etc/bind/domains/"$DOMAIN_NAME"/db."$REVERSE_NETWORK"
 
+    rm -rf /etc/bind/named.conf.options
+    echo $'options {
+    directory "/var/cache/bind";
+
+    forwarders { '$OUTSIDE_DNS'; };
+
+    dnssec-enable yes;
+    dnssec-validation yes;
+    dnssec-lookaside auto;
+
+    auth-nxdomain no;
+    listen-on-v6 { any; };
+};' > /etc/bind/named.conf.options
+
     rm -rf /etc/resolv.conf
     echo $'search '$DOMAIN_NAME'
 nameserver 127.0.0.1' > /etc/resolv.conf
