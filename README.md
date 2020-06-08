@@ -6,7 +6,7 @@ What do you want to do?
 
 [Configure VPN Server](#configure-vpn-server)
 
-[Initial Openstack configuration](#initial-openstack-configuration)
+[Initiate Openstack configuration](#initiate-openstack-configuration)
 
 [Manage VPN Users](#manage-vpn-users)
 
@@ -78,7 +78,7 @@ Now, all network parameters should be read to install Openstack. Continue follow
      	- username: ```admin```
     	- password: ```<*output of cat command above*>```
 
-## Initial Openstack configuration
+## Initiate Openstack configuration
 
 This procedures makes the initional Openstack configuration. To do it, follow the procedure below logged with ```root``` at ```infra0``` server:
 
@@ -89,12 +89,12 @@ cd /root
 source openrc
 ```
 
-#### Generate ssh Key to be used in VMs
+#### Generating ssh Key to be used in VMs
 
 ```openstack keypair create default > default.pem```
 
 
-#### Download image ISO files and create Openstack images
+#### Downloading ISO image files and creating Openstack images
 
 ```
 wget http://download.cirros-cloud.net/0.5.1/cirros-0.5.1-x86_64-disk.img
@@ -104,7 +104,7 @@ openstack image create --file cirros-0.5.1-x86_64-disk.img --disk-format qcow2 -
 openstack image create --file bionic-server-cloudimg-amd64.img --disk-format qcow2 --container-format bare --public bionic-server
 ```
 
-#### Create Flavors
+#### Creating Flavors
 
 ```
 openstack flavor create --ram 512 --disk 1 --vcpus 1 m1.tiny
@@ -114,7 +114,7 @@ openstack flavor create --ram 8192 --disk 80 --vcpus 1 m1.large
 openstack flavor create --ram 16384 --disk 160 --vcpus 1 m1.xlarge
 ```
 
-#### Create Admin External Network
+#### Creating Admin External Network
 
 ```
 openstack network create --external external-admin-net --availability-zone-hint nova --provider-network-type flat --provider-physical-network padmin --share
@@ -122,7 +122,7 @@ openstack network create --external external-admin-net --availability-zone-hint 
 openstack subnet create --network external-admin-net --subnet-range 192.168.201.0/24 --allocation-pool start=192.168.201.1,end=192.168.201.200 --dhcp --gateway 192.168.201.254 --ip-version 4 --dns-nameserver 192.168.200.254 external-admin-subnet
 ```
 
-#### Import CA-Server snapshot image
+#### Importing CA-Server image from snapshot
 
 ```
 openstack security group create --description "Security Group to CA-Server virtual host" CA-Server-Security-Group
@@ -136,7 +136,7 @@ openstack security group rule create --ingress --protocol udp --remote-ip 0.0.0.
 ```openstack server create --flavor m1.small --image CA-Server --key-name default --nic net-id=$(openstack network show external-admin-net | grep " id" | awk '{print $4}'),v4-fixed-ip=192.168.201.252 --security-group CA-Server-Security-Group CA-Server```
 
 
-#### Create VMs External Network
+#### Creating VM's External Network
 
 ```
 openstack network create --external external-vm-net --availability-zone-hint nova --provider-network-type flat --provider-physical-network pvm --share
@@ -144,14 +144,14 @@ openstack network create --external external-vm-net --availability-zone-hint nov
 openstack subnet create --network external-vm-net --subnet-range 192.168.202.0/24 --allocation-pool start=192.168.202.1,end=192.168.202.200 --dhcp --gateway 192.168.202.254 --ip-version 4 --dns-nameserver 192.168.200.254 external-vm-subnet
 ```
 
-#### Create VMs Internal Network
+#### Creating VM's Internal Network
 
 ```
 openstack network create --internal --availability-zone-hint nova internal-net
 openstack subnet create --network internal-net --subnet-range 192.168.0.0/24 --dhcp --gateway 192.168.0.1 --ip-version 4 --dns-nameserver 192.168.200.254 internal-subnet
 ```
 
-#### Create VM's Internet Router
+#### Creating VM's Internet Router
 
 ```
 openstack router create --availability-zone-hint nova internet-router-vm
@@ -159,7 +159,7 @@ openstack router add subnet internet-router-vm internal-subnet
 openstack router set --external-gateway external-vm-net --enable-snat internet-router-vm
 ```
 
-#### Create test VMs
+#### Creating test VMs
 
 ```
 openstack server create --flavor m1.tiny --image cirros --key-name default --network internal-net cirros_1
@@ -202,4 +202,4 @@ The VPN server should be configured only one time. If you want to create users, 
 	- ```sudo ./manage_vpn.sh```
 
 3. now, send the certificates to each user using secure channel, like scp:
-	- Obs.: the certificates are in ```~/client-configs/files/```
+	- Obs.: the certificates are stored in ```~/client-configs/files/```
