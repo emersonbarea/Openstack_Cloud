@@ -1,7 +1,8 @@
 # Openstack-Cloud
 
-[Install Openstack](#place-2)
-[Manage VPN Users](#place-2)
+[Install Openstack](#install-openstack)
+
+[Manage VPN Users](#manage-vpn-users)
 
 ## Install Openstack
 
