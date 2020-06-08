@@ -27,56 +27,43 @@ Now, execute the procedures below:
 	- ```ifconfig```
 		- validate if the IP address configured by DHCP server corresponds to the [topology](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf)
 
+6. execute the command ```fping -f fping.txt```, and look if all servers ```is alive```.
+	- if any server is ```Unreachable```, reconfigure its network interface following the steps above.
 
+7. At ```rt-internet```, execute ```./scp.sh``` to copy the all corresponding files to each server.
 
-
-
-2. execute ```./scp.sh``` to copy the all corresponding files to each server and switch.
-
-3. ssh into ```infra0``` server and configure it:
+8. ssh into ```infra0``` server and configure it:
 	- ```ssh infra0```
 	- ```sudo ./all_openstack_servers.sh```
 	- ```sudo reboot```
 
-4. ssh into ```compute00``` server and configure it:
+9. ssh into ```compute00``` server and configure it:
 	- ```ssh compute00```
 	- ```sudo ./all_openstack_servers.sh```
 	- ```sudo reboot```
 
-5. ssh into ```compute01``` server and configure it:
+10. ssh into ```compute01``` server and configure it:
 	- ```ssh compute01```
 	- ```sudo ./all_openstack_servers.sh```
 	- ```sudo reboot```
 
-6. ssh into ```compute02``` server and configure it:
+11. ssh into ```compute02``` server and configure it:
 	- ```ssh compute02```
 	- ```sudo ./all_openstack_servers.sh```
 	- ```sudo reboot```
 
-7. ssh into ```sw-mgmt``` switch and configure it:
-	- ```ssh sw-mgmt```
-	- ```sudo ./sw-mgmt.sh```
-	- ```sudo reboot```
-
-8. ssh into ```sw-tenant``` switch and configure it:
-	- ```ssh sw-tenant```
-	- ```sudo ./sw-tenant.sh```
-	- ```sudo reboot```
-
-9. complete the ```sw-internet``` configuration:
-	- ```sudo ./sw-internet.sh```
-	- ```sudo reboot```
-
 Now, all network parameters should be read to install Openstack. Continue following the steps bellow:
 
-10. ssh into ```infra0``` server and configure it:
+12. ssh into ```infra0``` server and configure it:
 	- ```ssh infra0```
 	- ```sudo ./only_infra_server.sh```
       
-    	- take 5 coffees and two cup of water.
+    	- take 5 coffees and a cup of water.
 
 	- execute ```cat /etc/openstack_deploy/user_secrets.yml | grep keystone_auth_admin_password``` to know dashboard ```admin``` password
 	- open your internet browser and go to ```http://<infra_node_IP>```
 
      	- username: ```admin```
     	- password: ```<output of cat command above>```
+
+    		
