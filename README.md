@@ -34,8 +34,8 @@ Now, execute the procedures below:
 4. At ```sw-hp``` console, ```Ctrl + c``` and ```Ctrl + v``` the configuration existent in [sw-hp-up_only_first_network_interface_on_each_server.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp-up_only_first_network_interface_on_each_server.md) file.
 
 5. Go to ```infra0```, ```compute00```, ```compute01``` and ```compute02``` servers, and find for the network interface with the mac address correponding to the ```eth0``` interface presented in the [topology file](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf). After that, execute the commands below:
-	- ```ifconfig <*interface*> up```
-	- ```dhclient <*interface*>```
+	- ```ifconfig <interface> up```
+	- ```dhclient <interface>```
 	- ```ifconfig```
 		- validate if the IP address configured by DHCP server corresponds to the [topology](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf)
 
@@ -84,7 +84,7 @@ This procedures makes the initional Openstack configuration. To do it, follow th
 
 ```
 lxc-ls | grep infra_utility_container
-lxc-attach infra_utility_container-<*container identifier*>
+lxc-attach infra_utility_container-<container identifier>
 cd /root
 source openrc
 ```
@@ -138,32 +138,41 @@ openstack security group rule create --ingress --protocol udp --remote-ip 0.0.0.
 
 #### Create VMs External Network
 
-```openstack network create --external external-vm-net --availability-zone-hint nova --provider-network-type flat --provider-physical-network pvm --share
-openstack subnet create --network external-vm-net --subnet-range 192.168.202.0/24 --allocation-pool start=192.168.202.1,end=192.168.202.200 --dhcp --gateway 192.168.202.254 --ip-version 4 --dns-nameserver 192.168.200.254 external-vm-subnet
+```
+openstack network create --external external-vm-net --availability-zone-hint nova --provider-network-type flat --provider-physical-network pvm --share
 
+openstack subnet create --network external-vm-net --subnet-range 192.168.202.0/24 --allocation-pool start=192.168.202.1,end=192.168.202.200 --dhcp --gateway 192.168.202.254 --ip-version 4 --dns-nameserver 192.168.200.254 external-vm-subnet
+```
+
+#### Create VMs Internal Network
+
+```
 openstack network create --internal --availability-zone-hint nova internal-net
 openstack subnet create --network internal-net --subnet-range 192.168.0.0/24 --dhcp --gateway 192.168.0.1 --ip-version 4 --dns-nameserver 192.168.200.254 internal-subnet
+```
 
+#### Create VM's Internet Router
+
+```
 openstack router create --availability-zone-hint nova internet-router-vm
 openstack router add subnet internet-router-vm internal-subnet
 openstack router set --external-gateway external-vm-net --enable-snat internet-router-vm
+```
 
+#### Create test VMs
+
+```
 openstack server create --flavor m1.tiny --image cirros --key-name default --network internal-net cirros_1
 openstack server show cirros_1
 openstack server create --flavor m1.tiny --image cirros --key-name default --network internal-net cirros_2
 openstack server show cirros_2
-
-openstack server create --flavor m1.tiny --image cirros --key-name default cirros_1 --availability-zone nova:compute00
 ```
 
-## VM BACKUP AND RESTORE (USING SNAPSHOT)
+Obs.: if you want to pin a VM to a especific compute node, make:
 
-https://docs.openstack.org/ocata/user-guide/cli-use-snapshots-to-migrate-instances.html
-
-openstack server create --flavor m1.small --image CA-Server --key-name default --nic net-id=$(openstack network show external-admin-net | grep " id" | awk '{print $4}'),v4-fixed-ip=192.168.201.252 --security-group CA-Server-Security-Group CA-Server
-
-
-
+```
+openstack server create --flavor m1.tiny --image cirros --key-name default cirros_1 --availability-zone nova:compute00
+```
 
 ## Configure VPN Server
 
