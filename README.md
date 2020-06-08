@@ -1,5 +1,7 @@
 # Openstack-Cloud
 
+[Install Openstack](#place-2)
+[Manage VPN Users](#place-2)
 
 ## Install Openstack
 
@@ -69,3 +71,4 @@ Now, all network parameters should be read to install Openstack. Continue follow
      	- username: ```admin```
     	- password: ```<output of cat command above>```
 
+## Manage VPN Users
