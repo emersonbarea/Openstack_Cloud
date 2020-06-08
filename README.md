@@ -66,6 +66,8 @@ Now, execute the procedures below:
 
 Now, all network parameters should be read to install Openstack. Continue following the steps bellow:
 
+12. turn up all ```sw-hp``` interfaces executing the commands described in [sw-hp-up_all_servers_interface.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp-up_all_servers_interface.md) file.
+
 12. ssh into ```infra0``` server and configure it:
 	- ```ssh infra0```
 	- ```sudo ./only_infra_server.sh```
