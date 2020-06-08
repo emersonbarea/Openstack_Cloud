@@ -21,11 +21,11 @@ Now, execute the procedures below:
 
 4. On ```sw-hp``` console, ```Ctrl + c``` and ```Ctrl + v``` the configuration existent in [sw-hp-up_only_first_network_interface_on_each_server.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp-up_only_first_network_interface_on_each_server.md) file.
 
-5. Go to ```infra0```, ```compute00```, ```compute01``` and ```compute02``` servers, and find for the network interfaces with the mac address correponding to the ```eth0``` interface presented in the [topology file](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf), and execute the commands below:
+5. Go to ```infra0```, ```compute00```, ```compute01``` and ```compute02``` servers, and find for the network interface with the mac address correponding to the ```eth0``` interface presented in the [topology file](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf). After that, execute the commands below:
 	- ```ifconfig <interface> up```
 	- ```dhclient <interface>```
 	- ```ifconfig```
-		- validate if the IP address configured by DHCP server correspond to the [topology](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf)
+		- validate if the IP address configured by DHCP server corresponds to the [topology](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf)
 
 
 
