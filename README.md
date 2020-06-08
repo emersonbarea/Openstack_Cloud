@@ -1,10 +1,10 @@
 # Openstack-Cloud
 
-First of all, install Ubuntu Server LTS 18.04 on all servers and WhiteBox switches.
+First of all, install Ubuntu Server LTS 18.04 on all servers and WhiteBox switch.
 
 Connect all machines like [Openstack_Cloud.pdf](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf) topology.
 
-**Attention:** before next steps, make sure you have access to ```rt-internet``` (console or ssh). ```rt-internet``` must also be able to access the internet (wget and ```apt```).
+**Attention:** before next steps, make sure you have access to ```rt-internet``` (console or ssh). ```rt-internet``` must also be able to access internet using wget and ```apt```.
 
 Go to ```rt-internet``` and run [git clone https://github.com/emersonbarea/Openstack_Cloud.git](https://github.com/emersonbarea/Openstack_Cloud).
 
