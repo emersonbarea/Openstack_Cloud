@@ -16,8 +16,8 @@ cd /root/EasyRSA-3.0.7/
 echo yes | bash ./easyrsa revoke rt-internet
 ./easyrsa import-req /tmp/"$HOSTNAME_RT_INTERNET".req "$HOSTNAME_RT_INTERNET"
 echo yes | bash ./easyrsa sign-req server "$HOSTNAME_RT_INTERNET"
-scp /root/EasyRSA-3.0.7/pki/issued/"$HOSTNAME_RT_INTERNET".crt cesar@rt-internet.openstack.ita:/tmp
-scp /root/EasyRSA-3.0.7/pki/ca.crt cesar@rt-internet.openstack.ita:/tmp
+scp /root/EasyRSA-3.0.7/pki/issued/"$HOSTNAME_RT_INTERNET".crt huguinho@rt-internet.openstack.ita:/tmp
+scp /root/EasyRSA-3.0.7/pki/ca.crt huguinho@rt-internet.openstack.ita:/tmp
 exit
 EOF
     cp /tmp/{"$HOSTNAME_RT_INTERNET".crt,ca.crt} /etc/openvpn/
@@ -48,8 +48,8 @@ EOF
     rm -rf /etc/openvpn/ccd 2> /dev/null
     mkdir -p /etc/openvpn/ccd
     IP_VPN=$(echo "$NETWORK_VPN_NET_ADMIN" | cut -d"." -f 1,2,3)
-    echo "ifconfig-push $IP_VPN.1 $IP_VPN.2" > /etc/openvpn/ccd/"Cesar Marcondes"
-    echo "ifconfig-push $IP_VPN.5 $IP_VPN.6" > /etc/openvpn/ccd/"Emerson Barea"
+    echo "ifconfig-push $IP_VPN.1 $IP_VPN.2" > /etc/openvpn/ccd/"Hugo Junqueira"
+    echo "ifconfig-push $IP_VPN.5 $IP_VPN.6" > /etc/openvpn/ccd/"Julicleido Antunes"
 
     mkdir -p "$HOME_DIR"/client-configs/keys 2> /dev/null
     chmod -R 700 "$HOME_DIR"/client-configs
