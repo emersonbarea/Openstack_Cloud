@@ -14,30 +14,30 @@ What do you want to do?
 
 First of all, install Ubuntu Server LTS 18.04 on all servers and WhiteBox switch.
 
-Connect all machines like [Openstack_Cloud.pdf](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf) topology.
+Connect all machines following [Openstack_Cloud.pdf](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf) topology.
 
-**Attention:** before next steps, make sure you have access to ```rt-internet``` (console or ssh). ```rt-internet``` must also be able to access internet using ```wget``` and ```apt```.
+**Obs.:** before next steps, make sure you have access to ```rt-internet``` (console or ssh). ```rt-internet``` must also be able to access Internet using ```wget``` and ```apt```.
 
 Go to ```rt-internet``` and run [git clone https://github.com/emersonbarea/Openstack_Cloud.git](https://github.com/emersonbarea/Openstack_Cloud).
 
-Check ```parameters.conf``` file to verify if the parameters values represents your environment.
+Check ```parameters.conf``` file and ensure the values represents your environment.
 
 Now, execute the procedures below:
 
-1. Access the HP 2910 switch (```sw-hp```) by console, and ```Ctrl + c``` and ```Ctrl + v``` the configuration existent in [sw-hp.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp.md) file.
+1. Access the HP 2910 switch (```sw-hp```) console, and ```Ctrl + c``` and ```Ctrl + v``` the configuration from the [sw-hp.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp.md) file.
 
-2. At ```rt-internet``` machine, execute ```cd ~/Openstack_Cloud``` and ```sudo rt-internet.sh```
-	- this procedure configures ```rt-internet``` to be a DHCP server, DNS server and Firewall server to other machines
+2. At ```rt-internet```, execute ```cd ~/Openstack_Cloud``` and ```sudo rt-internet.sh```
+	- this procedure configures ```rt-internet``` to be a DHCP server, DNS server and Firewall
 	
-3. At ```sw-hp``` console, ```Ctrl + c``` and ```Ctrl + v``` the configuration existent in [sw-hp-shutdown_all_servers_interfaces.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp-shutdown_all_servers_interfaces.md) file.
+3. At ```sw-hp``` console, ```Ctrl + c``` and ```Ctrl + v``` the configuration from the [sw-hp-shutdown_all_servers_interfaces.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp-shutdown_all_servers_interfaces.md) file.
 
-4. At ```sw-hp``` console, ```Ctrl + c``` and ```Ctrl + v``` the configuration existent in [sw-hp-up_only_first_network_interface_on_each_server.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp-up_only_first_network_interface_on_each_server.md) file.
+4. At ```sw-hp``` console, ```Ctrl + c``` and ```Ctrl + v``` the configuration from the [sw-hp-up_only_first_network_interface_on_each_server.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp-up_only_first_network_interface_on_each_server.md) file.
 
-5. Go to ```infra0```, ```compute00```, ```compute01``` and ```compute02``` servers, and find for the network interface with the mac address correponding to the ```eth0``` interface presented in the [topology file](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf). After that, execute the commands below:
+5. Go to ```infra0```, ```compute00```, ```compute01```, ```compute02```, ```compute03```, ```compute04``` servers, and find for the network interface with the mac address correponding to the ```eth0``` interface configured in the [topology file](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf). After that, execute the commands below:
 	- ```ifconfig <interface> up```
 	- ```dhclient <interface>```
 	- ```ifconfig```
-		- validate if the IP address configured by DHCP server corresponds to the [topology](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf)
+		- verify if the IP address assigned by DHCP server corresponds to the [topology](https://github.com/emersonbarea/Openstack_Cloud/blob/master/topology/Openstack_Cloud.pdf)
 
 6. execute the command ```fping -f fping.txt```, and look if all servers ```is alive```.
 	- if any server is ```Unreachable```, reconfigure its network interface following the steps above.
@@ -64,11 +64,21 @@ Now, execute the procedures below:
 	- ```sudo ./all_openstack_servers.sh```
 	- ```sudo reboot```
 
-Now, all network parameters should be read to install Openstack. Continue following the steps bellow:
+12. ssh into ```compute03``` server and configure it:
+	- ```ssh compute03```
+	- ```sudo ./all_openstack_servers.sh```
+	- ```sudo reboot```
 
-12. turn up all ```sw-hp``` interfaces executing the commands described in [sw-hp-up_all_servers_interface.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp-up_all_servers_interface.md) file.
+13. ssh into ```compute04``` server and configure it:
+	- ```ssh compute04```
+	- ```sudo ./all_openstack_servers.sh```
+	- ```sudo reboot```
 
-12. ssh into ```infra0``` server and configure it:
+Now, all network parameters should be read to install Openstack. Follow the steps bellow:
+
+14. turn up all ```sw-hp``` interfaces executing the commands from the [sw-hp-up_all_servers_interface.md](https://github.com/emersonbarea/Openstack_Cloud/blob/master/sw-hp-up_all_servers_interface.md) file.
+
+15. ssh into ```infra0``` server and configure it:
 	- ```ssh infra0```
 	- ```sudo ./only_infra_server.sh```
       
@@ -82,7 +92,7 @@ Now, all network parameters should be read to install Openstack. Continue follow
 
 ## Initiate Openstack configuration
 
-This procedures makes the initional Openstack configuration. To do it, follow the procedure below logged with ```root``` at ```infra0``` server:
+This procedures makes the initial Openstack configuration. To do it, follow the procedure below using ```root``` user in ```infra0``` server:
 
 ```
 lxc-ls | grep infra_utility_container
